@@ -62,7 +62,7 @@ void internal_draw_string(float x, float y, const std::string &string,
     for (size_t i = 0; i < string.size(); ++i)
     {
         texture_glyph_t *glyph = texture_font_find_glyph(fnt, &sstring[i]);
-        if (glyph == NULL)
+        if (glyph == nullptr)
         {
             texture_font_load_glyph(fnt, &sstring[i]);
             if (!skipped)
