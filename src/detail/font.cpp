@@ -60,7 +60,7 @@ void ifont::stringSize(const std::string &string, float *width, float *height)
 
     for (size_t i = 0; i < string.size(); ++i)
     {
-        // c_str guarantees a  terminator
+        // c_str guarantees a NULL terminator
         texture_glyph_t *glyph = texture_font_find_glyph(m_font, &sstring[i]);
         if (glyph == nullptr)
             continue;
