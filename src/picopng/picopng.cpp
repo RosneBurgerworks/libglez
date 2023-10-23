@@ -59,7 +59,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
     static unsigned long readBitsFromStream(size_t& bitp, const unsigned char* bits, size_t nbits)
     {
       unsigned long result = 0;
-      for(size_t i = 0; i < nbits; i++) result += (readBitFromStream(bitp, bits)) << i;
+      for(size_t i = 0; i < nbits; ++i) result += (readBitFromStream(bitp, bits)) << i;
       return result;
     }
     struct HuffmanTree
@@ -73,7 +73,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
         for(unsigned long n = 0; n < numcodes; n++) if(bitlen[n] != 0) tree1d[n] = nextcode[bitlen[n]]++; //generate all the codes
         tree2d.clear(); tree2d.resize(numcodes * 2, 32767); //32767 here means the tree2d isn't filled there yet
         for(unsigned long n = 0; n < numcodes; n++) //the codes
-        for(unsigned long i = 0; i < bitlen[n]; i++) //the bits for this code
+        for(unsigned long i = 0; i < bitlen[n]; ++i) //the bits for this code
         {
           unsigned long bit = (tree1d[n] >> (bitlen[n] - i - 1)) & 1;
           if(treepos > numcodes - 2) return 55;
@@ -119,8 +119,8 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
       void generateFixedTrees(HuffmanTree& tree, HuffmanTree& treeD) //get the tree of a deflated block with fixed tree
       {
         std::vector<unsigned long> bitlen(288, 8), bitlenD(32, 5);;
-        for(size_t i = 144; i <= 255; i++) bitlen[i] = 9;
-        for(size_t i = 256; i <= 279; i++) bitlen[i] = 7;
+        for(size_t i = 144; i <= 255; ++i) bitlen[i] = 9;
+        for(size_t i = 256; i <= 279; ++i) bitlen[i] = 7;
         tree.makeFromLengths(bitlen, 15);
         treeD.makeFromLengths(bitlenD, 15);
       }
@@ -143,13 +143,13 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
         size_t HDIST = readBitsFromStream(bp, in, 5) + 1; //number of dist codes + 1
         size_t HCLEN = readBitsFromStream(bp, in, 4) + 4; //number of code length codes + 4
         std::vector<unsigned long> codelengthcode(19); //lengths of tree to decode the lengths of the dynamic tree
-        for(size_t i = 0; i < 19; i++) codelengthcode[CLCL[i]] = (i < HCLEN) ? readBitsFromStream(bp, in, 3) : 0;
+        for(size_t i = 0; i < 19; ++i) codelengthcode[CLCL[i]] = (i < HCLEN) ? readBitsFromStream(bp, in, 3) : 0;
         error = codelengthcodetree.makeFromLengths(codelengthcode, 7); if(error) return;
         size_t i = 0, replength;
         while(i < HLIT + HDIST)
         {
           unsigned long code = huffmanDecodeSymbol(in, bp, codelengthcodetree, inlength); if(error) return;
-          if(code <= 15)  { if(i < HLIT) bitlen[i++] = code; else bitlenD[i++ - HLIT] = code; } //a length code
+          if(code <= 15)  { if(i < HLIT) bitlen[++i] = code; else bitlenD[++i - HLIT] = code; } //a length code
           else if(code == 16) //repeat previous
           {
             if(bp >> 3 >= inlength) { error = 50; return; } //error, bit pointer jumps past memory
@@ -160,7 +160,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
             for(size_t n = 0; n < replength; n++) //repeat this value in the next lengths
             {
               if(i >= HLIT + HDIST) { error = 13; return; } //error: i is larger than the amount of codes
-              if(i < HLIT) bitlen[i++] = value; else bitlenD[i++ - HLIT] = value;
+              if(i < HLIT) bitlen[++i] = value; else bitlenD[++i - HLIT] = value;
             }
           }
           else if(code == 17) //repeat "0" 3-10 times
@@ -170,7 +170,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
             for(size_t n = 0; n < replength; n++) //repeat this value in the next lengths
             {
               if(i >= HLIT + HDIST) { error = 14; return; } //error: i is larger than the amount of codes
-              if(i < HLIT) bitlen[i++] = 0; else bitlenD[i++ - HLIT] = 0;
+              if(i < HLIT) bitlen[++i] = 0; else bitlenD[++i - HLIT] = 0;
             }
           }
           else if(code == 18) //repeat "0" 11-138 times
@@ -180,7 +180,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
             for(size_t n = 0; n < replength; n++) //repeat this value in the next lengths
             {
               if(i >= HLIT + HDIST) { error = 15; return; } //error: i is larger than the amount of codes
-              if(i < HLIT) bitlen[i++] = 0; else bitlenD[i++ - HLIT] = 0;
+              if(i < HLIT) bitlen[++i] = 0; else bitlenD[++i - HLIT] = 0;
             }
           }
           else { error = 16; return; } //error: somehow an unexisting code appeared. This can never happen.
@@ -214,7 +214,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
             dist += readBitsFromStream(bp, in, numextrabitsD);
             size_t start = pos, back = start - dist; //backwards
             if(pos + length >= out.size()) out.resize((pos + length) * 2); //reserve more room
-            for(size_t i = 0; i < length; i++) { out[pos++] = out[back++]; if(back >= start) back = start - dist; }
+            for(size_t i = 0; i < length; ++i) { out[pos++] = out[back++]; if(back >= start) back = start - dist; }
           }
         }
       }
@@ -290,7 +290,7 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
           if(info.colorType == 3)
           {
             if(4 * chunkLength > info.palette.size()) { error = 39; return; } //error: more alpha values given than there are palette entries
-            for(size_t i = 0; i < chunkLength; i++) info.palette[4 * i + 3] = in[pos++];
+            for(size_t i = 0; i < chunkLength; ++i) info.palette[4 * i + 3] = in[pos++];
           }
           else if(info.colorType == 0)
           {
@@ -368,37 +368,37 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
     {
       switch(filterType)
       {
-        case 0: for(size_t i = 0; i < length; i++) recon[i] = scanline[i]; break;
+        case 0: for(size_t i = 0; i < length; ++i) recon[i] = scanline[i]; break;
         case 1:
-          for(size_t i =         0; i < bytewidth; i++) recon[i] = scanline[i];
-          for(size_t i = bytewidth; i <    length; i++) recon[i] = scanline[i] + recon[i - bytewidth];
+          for(size_t i =         0; i < bytewidth; ++i) recon[i] = scanline[i];
+          for(size_t i = bytewidth; i <    length; ++i) recon[i] = scanline[i] + recon[i - bytewidth];
           break;
         case 2:
-          if(precon) for(size_t i = 0; i < length; i++) recon[i] = scanline[i] + precon[i];
-          else       for(size_t i = 0; i < length; i++) recon[i] = scanline[i];
+          if(precon) for(size_t i = 0; i < length; ++i) recon[i] = scanline[i] + precon[i];
+          else       for(size_t i = 0; i < length; ++i) recon[i] = scanline[i];
           break;
         case 3:
           if(precon)
           {
-            for(size_t i =         0; i < bytewidth; i++) recon[i] = scanline[i] + precon[i] / 2;
-            for(size_t i = bytewidth; i <    length; i++) recon[i] = scanline[i] + ((recon[i - bytewidth] + precon[i]) / 2);
+            for(size_t i =         0; i < bytewidth; ++i) recon[i] = scanline[i] + precon[i] / 2;
+            for(size_t i = bytewidth; i <    length; ++i) recon[i] = scanline[i] + ((recon[i - bytewidth] + precon[i]) / 2);
           }
           else
           {
-            for(size_t i =         0; i < bytewidth; i++) recon[i] = scanline[i];
-            for(size_t i = bytewidth; i <    length; i++) recon[i] = scanline[i] + recon[i - bytewidth] / 2;
+            for(size_t i =         0; i < bytewidth; ++i) recon[i] = scanline[i];
+            for(size_t i = bytewidth; i <    length; ++i) recon[i] = scanline[i] + recon[i - bytewidth] / 2;
           }
           break;
         case 4:
           if(precon)
           {
-            for(size_t i =         0; i < bytewidth; i++) recon[i] = scanline[i] + paethPredictor(0, precon[i], 0);
-            for(size_t i = bytewidth; i <    length; i++) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], precon[i], precon[i - bytewidth]);
+            for(size_t i =         0; i < bytewidth; ++i) recon[i] = scanline[i] + paethPredictor(0, precon[i], 0);
+            for(size_t i = bytewidth; i <    length; ++i) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], precon[i], precon[i - bytewidth]);
           }
           else
           {
-            for(size_t i =         0; i < bytewidth; i++) recon[i] = scanline[i];
-            for(size_t i = bytewidth; i <    length; i++) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], 0, 0);
+            for(size_t i =         0; i < bytewidth; ++i) recon[i] = scanline[i];
+            for(size_t i = bytewidth; i <    length; ++i) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], 0, 0);
           }
           break;
         default: error = 36; return; //error: unexisting filter type given
@@ -431,58 +431,58 @@ int decodePNG(unsigned char* &out_image, int& image_width, int& image_height, co
       size_t numpixels = w * h, bp = 0;
       out = new unsigned char[numpixels * 4 + 1];
       if(infoIn.bitDepth == 8 && infoIn.colorType == 0) //greyscale
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         out[4 * i + 0] = out[4 * i + 1] = out[4 * i + 2] = in[i];
         out[4 * i + 3] = (infoIn.key_defined && in[i] == infoIn.key_r) ? 0 : 255;
       }
       else if(infoIn.bitDepth == 8 && infoIn.colorType == 2) //RGB color
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         for(size_t c = 0; c < 3; c++) out[4 * i + c] = in[3 * i + c];
         out[4 * i + 3] = (infoIn.key_defined == 1 && in[3 * i + 0] == infoIn.key_r && in[3 * i + 1] == infoIn.key_g && in[3 * i + 2] == infoIn.key_b) ? 0 : 255;
       }
       else if(infoIn.bitDepth == 8 && infoIn.colorType == 3) //indexed color (palette)
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         if(4U * in[i] >= infoIn.palette.size()) return 46;
         for(size_t c = 0; c < 4; c++) out[4 * i + c] = infoIn.palette[4 * in[i] + c]; //get rgb colors from the palette
       }
       else if(infoIn.bitDepth == 8 && infoIn.colorType == 4) //greyscale with alpha
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         out[4 * i + 0] = out[4 * i + 1] = out[4 * i + 2] = in[2 * i + 0];
         out[4 * i + 3] = in[2 * i + 1];
       }
-      else if(infoIn.bitDepth == 8 && infoIn.colorType == 6) for(size_t i = 0; i < numpixels; i++) for(size_t c = 0; c < 4; c++) out[4 * i + c] = in[4 * i + c]; //RGB with alpha
+      else if(infoIn.bitDepth == 8 && infoIn.colorType == 6) for(size_t i = 0; i < numpixels; ++i) for(size_t c = 0; c < 4; c++) out[4 * i + c] = in[4 * i + c]; //RGB with alpha
       else if(infoIn.bitDepth == 16 && infoIn.colorType == 0) //greyscale
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         out[4 * i + 0] = out[4 * i + 1] = out[4 * i + 2] = in[2 * i];
         out[4 * i + 3] = (infoIn.key_defined && 256U * in[i] + in[i + 1] == infoIn.key_r) ? 0 : 255;
       }
       else if(infoIn.bitDepth == 16 && infoIn.colorType == 2) //RGB color
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         for(size_t c = 0; c < 3; c++) out[4 * i + c] = in[6 * i + 2 * c];
         out[4 * i + 3] = (infoIn.key_defined && 256U*in[6*i+0]+in[6*i+1] == infoIn.key_r && 256U*in[6*i+2]+in[6*i+3] == infoIn.key_g && 256U*in[6*i+4]+in[6*i+5] == infoIn.key_b) ? 0 : 255;
       }
       else if(infoIn.bitDepth == 16 && infoIn.colorType == 4) //greyscale with alpha
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         out[4 * i + 0] = out[4 * i + 1] = out[4 * i + 2] = in[4 * i]; //most significant byte
         out[4 * i + 3] = in[4 * i + 2];
       }
-      else if(infoIn.bitDepth == 16 && infoIn.colorType == 6) for(size_t i = 0; i < numpixels; i++) for(size_t c = 0; c < 4; c++) out[4 * i + c] = in[8 * i + 2 * c]; //RGB with alpha
+      else if(infoIn.bitDepth == 16 && infoIn.colorType == 6) for(size_t i = 0; i < numpixels; ++i) for(size_t c = 0; c < 4; c++) out[4 * i + c] = in[8 * i + 2 * c]; //RGB with alpha
       else if(infoIn.bitDepth < 8 && infoIn.colorType == 0) //greyscale
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         unsigned long value = (readBitsFromReversedStream(bp, in, infoIn.bitDepth) * 255) / ((1 << infoIn.bitDepth) - 1); //scale value from 0 to 255
         out[4 * i + 0] = out[4 * i + 1] = out[4 * i + 2] = (unsigned char)(value);
         out[4 * i + 3] = (infoIn.key_defined && value && ((1U << infoIn.bitDepth) - 1U) == infoIn.key_r && ((1U << infoIn.bitDepth) - 1U)) ? 0 : 255;
       }
       else if(infoIn.bitDepth < 8 && infoIn.colorType == 3) //palette
-      for(size_t i = 0; i < numpixels; i++)
+      for(size_t i = 0; i < numpixels; ++i)
       {
         unsigned long value = readBitsFromReversedStream(bp, in, infoIn.bitDepth);
         if(4 * value >= infoIn.palette.size()) return 47;

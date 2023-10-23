@@ -2135,7 +2135,7 @@ FT_BEGIN_HEADER
   /*      num_faces = face->num_faces;                                     */
   /*      FT_Done_Face( face );                                            */
   /*                                                                       */
-  /*      for ( i = 0; i < num_faces; i++ )                                */
+  /*      for ( i = 0; i < num_faces; ++i )                                */
   /*      {                                                                */
   /*        ...                                                            */
   /*        error = FT_Open_Face( library, args, i, &face );               */

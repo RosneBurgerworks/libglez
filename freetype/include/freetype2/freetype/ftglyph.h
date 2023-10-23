@@ -487,13 +487,13 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*        ...                                                            */
   /*                                                                       */
-  /*        for ( idx = 0; i < MAX_GLYPHS; i++ )                           */
+  /*        for ( idx = 0; i < MAX_GLYPHS; ++i )                           */
   /*          error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT ) ||       */
   /*                  FT_Get_Glyph ( face->glyph, &glyph[idx] );           */
   /*                                                                       */
   /*        ...                                                            */
   /*                                                                       */
-  /*        for ( idx = 0; i < MAX_GLYPHS; i++ )                           */
+  /*        for ( idx = 0; i < MAX_GLYPHS; ++i )                           */
   /*        {                                                              */
   /*          FT_Glyph  bitmap = glyphs[idx];                              */
   /*                                                                       */
@@ -511,7 +511,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*        ...                                                            */
   /*                                                                       */
-  /*        for ( idx = 0; i < MAX_GLYPHS; i++ )                           */
+  /*        for ( idx = 0; i < MAX_GLYPHS; ++i )                           */
   /*          FT_Done_Glyph( glyphs[idx] );                                */
   /*      }                                                                */
   /*                                                                       */

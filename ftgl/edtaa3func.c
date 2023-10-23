@@ -68,7 +68,7 @@ void computegradient(double *img, int w, int h, double *gx, double *gy)
     double glength, phi, phiscaled, ascaled, errsign, pfrac, qfrac, err0, err1,
         err;
 #define SQRT2 1.4142136
-    for (i = 1; i < h - 1; i++)
+    for (i = 1; i < h - 1; ++i)
     { // Avoid edges where the kernels would spill over
         for (j = 1; j < w - 1; j++)
         {
@@ -210,7 +210,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx,
     offset_lu = -w - 1;
 
     /* Initialize the distance images */
-    for (i = 0; i < w * h; i++)
+    for (i = 0; i < w * h; ++i)
     {
         distx[i] = 0; // At first, all pixels point to
         disty[i] = 0; // themselves as the closest known.
@@ -276,10 +276,10 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx,
                     changed  = 1;
                 }
             }
-            i++;
+            ++i;
 
             /* Middle pixels have all neighbors */
-            for (x = 1; x < w - 1; x++, i++)
+            for (x = 1; x < w - 1; x++, ++i)
             {
                 olddist = dist[i];
                 if (olddist <= 0)
@@ -582,7 +582,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx,
             /* Move index to second leftmost pixel of current row. */
             /* Leftmost pixel is skipped, it has no left neighbor. */
             i = y * w + 1;
-            for (x = 1; x < w; x++, i++)
+            for (x = 1; x < w; x++, ++i)
             {
                 /* scan right, propagate distance from left */
                 olddist = dist[i];

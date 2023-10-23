@@ -607,7 +607,7 @@ int texture_font_load_glyph(texture_font_t *self, const char *codepoint)
     unsigned char *dst_ptr =
         buffer + (padding.top * tgt_w + padding.left) * self->atlas->depth;
     unsigned char *src_ptr = ft_bitmap.buffer;
-    for (i = 0; i < src_h; i++)
+    for (i = 0; i < src_h; ++i)
     {
         // difference between width and pitch:
         // https://www.freetype.org/freetype2/docs/reference/ft2-basic_types.html#FT_Bitmap
@@ -738,7 +738,7 @@ void texture_font_enlarge_atlas(texture_font_t *self, size_t width_new,
     float mulw = (float) width_old / width_new;
     float mulh = (float) height_old / height_new;
     size_t i;
-    for (i = 0; i < vector_size(self->glyphs); i++)
+    for (i = 0; i < vector_size(self->glyphs); ++i)
     {
         texture_glyph_t *g = *(texture_glyph_t **) vector_get(self->glyphs, i);
         g->s0 *= mulw;
